@@ -1,0 +1,13 @@
+{
+  "name": "swarm-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "docker-compose up --build",
+    "swarm": "node scripts/deploy_stack.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

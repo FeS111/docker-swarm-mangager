@@ -1,0 +1,31 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Replica {
+  id            Int             @id @default(autoincrement())
+  available     Int
+  unavailable   Int
+  DockerService DockerService[]
+}
+
+model DockerService {
+  id          Int      @id @default(autoincrement())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  serviceID   String   @unique @db.VarChar(100)
+  name        String   @unique @db.VarChar(255)
+  mode        String   @db.VarChar(20)
+  image       String   @db.VarChar(255)
+  portMapping String?  @db.VarChar(255)
+  replicas    Replica  @relation(fields: [replicaId], references: [id])
+  replicaId   Int
+}
