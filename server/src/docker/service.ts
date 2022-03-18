@@ -1,3 +1,4 @@
+import { registerJob, removeJob } from '../controller/cron.controller';
 import { prisma } from '../controller/prisma.controller';
 import { DockerService } from '../intefaces/docker-service.interface';
 import { exec } from '../util/shell';
@@ -21,10 +22,8 @@ export async function scaleService(serviceId: string, desired: number, update = 
   try {
     await runDocker(`service scale ${serviceId}=${desired}`);
     if (update) {
-      const service = getService(serviceId);
-      // prisma.dockerService.update({
-      //   data: service
-      // })
+      const service = await getService(serviceId);
+      await updateService(service);
     }
   } catch (error) {
     console.log(error);
@@ -34,7 +33,8 @@ export async function scaleService(serviceId: string, desired: number, update = 
 export async function rebootService(serviceId: string) {
   try {
     const service = await getService(serviceId);
-    // await runDocker(`service scale ${serviceId}=${desired}`);
+    await scaleService(serviceId, 0, false);
+    await scaleService(serviceId, service.replicas.desired);
   } catch (error) {
     console.log(error);
   }
@@ -52,25 +52,7 @@ export async function syncServices() {
         }
       })
     ) {
-      await prisma.dockerService.update({
-        where: {
-          serviceID: service.serviceID
-        },
-        data: {
-          image: service.image,
-          mode: service.mode,
-          name: service.name,
-          serviceID: service.serviceID,
-          portMapping: service.portMapping,
-          replicas: {
-            update: {
-              available: service.replicas.available,
-              unavailable: service.replicas.unavailable,
-              desired: service.replicas.desired
-            }
-          }
-        }
-      });
+      await updateService(service);
     } else {
       await createService(service);
     }
@@ -91,29 +73,61 @@ async function createService(service: DockerService) {
           unavailable: service.replicas.unavailable,
           desired: service.replicas.desired
         }
+      },
+      scheduledRestart: {
+        create: {
+          active: false,
+          cron: ''
+        }
       }
     }
   });
 }
 
-async function updateService(service: DockerService) {
-  return await prisma.dockerService.update({
+export async function updateService(service: DockerService) {
+  if (service.scheduledRestart?.active) {
+    registerJob(service.serviceID, service.scheduledRestart.cron, () => {
+      try {
+        rebootService(service.serviceID);
+      } catch (error) {
+        console.log(error);
+      }
+    });
+  } else {
+    removeJob(service.serviceID);
+  }
+  let data: any = {
+    image: service.image,
+    mode: service.mode,
+    name: service.name,
+    serviceID: service.serviceID,
+    portMapping: service.portMapping,
+    replicas: {
+      update: {
+        available: service.replicas.available,
+        unavailable: service.replicas.unavailable,
+        desired: service.replicas.desired
+      }
+    }
+  };
+
+  if (service.scheduledRestart) {
+    data.scheduledRestart = {
+      update: {
+        active: service.scheduledRestart?.active,
+        cron: service.scheduledRestart?.cron
+      }
+    };
+  }
+  await prisma.dockerService.update({
     where: {
       serviceID: service.serviceID
     },
-    data: {
-      image: service.image,
-      mode: service.mode,
-      name: service.name,
-      serviceID: service.serviceID,
-      portMapping: service.portMapping,
-      replicas: {
-        update: {
-          available: service.replicas.available,
-          unavailable: service.replicas.unavailable,
-          desired: service.replicas.desired
-        }
-      }
+    data
+  });
+  return await prisma.dockerService.findFirst({
+    where: {
+      serviceID: { equals: service.serviceID }
     }
   });
 }

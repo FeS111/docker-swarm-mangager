@@ -1,3 +1,5 @@
+import { ScheduledRestart } from './scheduled-restart.interface';
+
 export interface DockerService {
   serviceID: string;
   name: string;
@@ -9,4 +11,5 @@ export interface DockerService {
   };
   image: string;
   portMapping?: string;
+  scheduledRestart?: ScheduledRestart;
 }

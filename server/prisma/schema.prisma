@@ -19,14 +19,23 @@ model Replica {
 }
 
 model DockerService {
-  id          Int      @id @default(autoincrement())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  serviceID   String   @unique @db.VarChar(100)
-  name        String   @unique @db.VarChar(255)
-  mode        String   @db.VarChar(20)
-  image       String   @db.VarChar(255)
-  portMapping String?  @db.VarChar(255)
-  replicas    Replica  @relation(fields: [replicaId], references: [id])
-  replicaId   Int
+  id                 Int              @id @default(autoincrement())
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  serviceID          String           @unique @db.VarChar(100)
+  name               String           @unique @db.VarChar(255)
+  mode               String           @db.VarChar(20)
+  image              String           @db.VarChar(255)
+  portMapping        String?          @db.VarChar(255)
+  replicas           Replica          @relation(fields: [replicaId], references: [id])
+  replicaId          Int
+  scheduledRestartId Int
+  scheduledRestart   ScheduledRestart @relation(fields: [scheduledRestartId], references: [id])
+}
+
+model ScheduledRestart {
+  id            Int             @id @default(autoincrement())
+  active        Boolean         @default(false)
+  cron          String          @default("")
+  DockerService DockerService[]
 }
