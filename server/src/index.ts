@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 import {config} from 'dotenv';
-import { syncServices } from './docker/service';
+import { getService, scaleService, syncServices } from './docker/service';
 config()
 
 const app = express();

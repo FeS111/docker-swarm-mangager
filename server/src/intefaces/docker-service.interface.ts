@@ -5,6 +5,7 @@ export interface DockerService {
   replicas: {
     available: number;
     unavailable: number;
+    desired: number;
   };
   image: string;
   portMapping?: string;
