@@ -6,7 +6,8 @@
   "scripts": {
     "tsc": "tsc",
     "start": "npm run tsc && node dist/index.js",
-    "watch": "tsc --watch & nodemon -w dist dist/index.js"
+    "watch": "tsc --watch & nodemon -w dist dist/index.js",
+    "docker": "node dist/index.js"
   },
   "author": "",
   "license": "ISC",

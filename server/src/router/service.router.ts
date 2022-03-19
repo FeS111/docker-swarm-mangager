@@ -19,6 +19,10 @@ router.get('/:id', async (req, res, next) => {
       await prisma.dockerService.findFirst({
         where: {
           serviceID: { equals: req.params.id }
+        },
+        include: {
+          replicas: true,
+          scheduledRestart: true
         }
       })
     );

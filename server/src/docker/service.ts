@@ -128,6 +128,10 @@ export async function updateService(service: DockerService) {
   return await prisma.dockerService.findFirst({
     where: {
       serviceID: { equals: service.serviceID }
+    },
+    include: {
+      replicas: true,
+      scheduledRestart: true
     }
   });
 }
