@@ -34,7 +34,9 @@ export async function rebootService(serviceId: string) {
   try {
     const service = await getService(serviceId);
     await scaleService(serviceId, 0, false);
-    await scaleService(serviceId, service.replicas.desired);
+    setTimeout(async () => {
+      await scaleService(serviceId, service.replicas.desired);
+    }, 100);
   } catch (error) {
     console.log(error);
   }

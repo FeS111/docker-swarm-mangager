@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import { config } from 'dotenv';
 import { syncServices } from './docker/service';
 import { router as serviceRouter } from './router/service.router';
+import { loadCronJobs } from './controller/cron.controller';
 config();
 
 const app = express();
@@ -21,4 +22,5 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
 app.listen(process.env.PORT ?? 8080, async () => {
   console.log(`Server is listening on port "${process.env.PORT ?? 8080}"`);
   syncServices();
+  loadCronJobs();
 });
